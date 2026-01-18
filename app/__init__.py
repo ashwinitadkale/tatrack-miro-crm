@@ -12,4 +12,14 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
 
+    from app.routes.inquiries import inquiries_bp
+    app.register_blueprint(inquiries_bp)
+
+    @app.route("/")
+    def home():
+        return {"status": "TatTrack CRM backend running"}
+
+
+
+
     return app
