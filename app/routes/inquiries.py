@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from app import db
 from app.models.inquiry import Inquiry
 
-inquiries_bp = Blueprint("inquiries_bp", __name__)
+inquiries_bp = Blueprint("inquiries", __name__)
 
 @inquiries_bp.route("/inquiries", methods=["POST"])
 def create_inquiry():
@@ -50,3 +50,17 @@ def delete_inquiry(id):
     db.session.delete(inquiry)
     db.session.commit()
     return jsonify({"message": "Inquiry deleted"})
+
+@inquiries_bp.route("/inquiries/pending", methods=["GET"])
+def pending_inquiries():
+    inquiries = Inquiry.query.filter(
+        Inquiry.status.in_(["new", "contacted", "consulted"])
+    ).all()
+
+    return jsonify([
+        {
+            "id": i.id,
+            "client_name": i.client_name,
+            "status": i.status
+        } for i in inquiries
+    ])
