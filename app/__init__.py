@@ -14,9 +14,11 @@ def create_app():
 
     from app.routes.inquiries import inquiries_bp
     from app.routes.reminders import reminders_bp
+    from app.routes.sessions import sessions_bp
 
     app.register_blueprint(inquiries_bp)
     app.register_blueprint(reminders_bp)
+    app.register_blueprint(sessions_bp)
 
 
     @app.route("/")
