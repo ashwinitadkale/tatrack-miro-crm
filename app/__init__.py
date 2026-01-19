@@ -13,9 +13,9 @@ def create_app():
     migrate.init_app(app, db)
 
     from app.routes.inquiries import inquiries_bp
-    app.register_blueprint(inquiries_bp)
-
     from app.routes.reminders import reminders_bp
+
+    app.register_blueprint(inquiries_bp)
     app.register_blueprint(reminders_bp)
 
 
