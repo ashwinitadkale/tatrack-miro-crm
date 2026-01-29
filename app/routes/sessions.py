@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from app import db
 from app.models.session import Session
 from app.models.inquiry import Inquiry
+from datetime import datetime 
 
 sessions_bp = Blueprint("sessions", __name__)
 
@@ -55,3 +56,19 @@ def update_session(id):
 
     db.session.commit()
     return jsonify({"message": "Session updated"})
+
+# @sessions_bp.route("/sessions/today", methods=["GET"])
+# def today_sessions():
+#     today = datetime.today()
+#     sessions = Session.query.filter_by(
+#         session_date=today,
+#         status="scheduled"
+#     ).all()
+
+#     return jsonify([
+#         {
+#             "id": s.id,
+#             "client": s.inquiry.client_name,
+#             "time": s.session_time
+#         } for s in sessions
+#     ])
