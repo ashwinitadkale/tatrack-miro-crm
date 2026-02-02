@@ -1,9 +1,17 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, render_template
 from flask_login import login_user, logout_user, login_required
 from app import db
 from app.models.user import User
 
 auth_bp = Blueprint("auth", __name__)
+
+@auth_bp.route("/register-page")
+def register_page():
+    return render_template("register.html")
+
+@auth_bp.route("/login-page")
+def login_page():
+    return render_template("login.html")
 
 @auth_bp.route("/register", methods=["POST"])
 def register():

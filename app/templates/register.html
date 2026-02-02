@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="max-w-md mx-auto bg-white p-8 border border-gray-200 rounded-lg shadow-sm mt-10">
+    <h2 class="text-2xl font-bold mb-6 text-center">Artist Registration</h2>
+    <form id="registerForm" class="space-y-4">
+        <input type="email" id="regEmail" placeholder="Email" class="w-full p-2 border rounded" required>
+        <input type="text" id="regStudio" placeholder="Studio Name" class="w-full p-2 border rounded">
+        <input type="password" id="regPassword" placeholder="Password" class="w-full p-2 border rounded" required>
+        <button type="submit" class="w-full bg-black text-white py-2 rounded font-bold hover:bg-gray-800">Sign Up</button>
+    </form>
+    <p class="mt-4 text-center text-sm">Already have an account? <a href="/login-page" class="text-blue-600 underline">Login</a></p>
+</div>
+<script>
+document.getElementById('registerForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const res = await fetch('/register', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            email: document.getElementById('regEmail').value,
+            studio_name: document.getElementById('regStudio').value,
+            password: document.getElementById('regPassword').value
+        })
+    });
+    if (res.ok) window.location.href = '/login-page';
+    else alert("Registration failed. Email might be taken.");
+};
+</script>
+{% endblock %}

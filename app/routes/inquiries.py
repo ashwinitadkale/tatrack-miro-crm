@@ -35,6 +35,8 @@ def create_inquiry():
     db.session.add(follow_up)
     db.session.commit()
 
+    return jsonify({"message": "Inquiry created"}), 201
+
 @inquiries_bp.route("/inquiries", methods=["GET"])
 @login_required
 def get_inquiries():

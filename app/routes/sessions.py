@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, render_template
 from app import db
 from app.models.session import Session
 from app.models.inquiry import Inquiry
@@ -9,21 +9,26 @@ sessions_bp = Blueprint("sessions", __name__)
 @sessions_bp.route("/sessions", methods=["POST"])
 def create_session():
     data = request.json
-
     inquiry = Inquiry.query.get_or_404(data["inquiry_id"])
+    
+    # Security check: Ensure inquiry belongs to logged-in user
+    if inquiry.user_id != current_user.id:
+        return jsonify({"error": "Unauthorized"}), 403
+
     inquiry.status = "booked"
 
     session = Session(
         inquiry_id=inquiry.id,
-        session_date=data["session_date"],
-        session_time=data.get("session_time")
+        session_date=datetime.strptime(data["session_date"], "%Y-%m-%d"),
+        session_time=data.get("session_time"),
+        deposit_amount=data.get("deposit_amount", 0), # Capture deposit
+        total_price=data.get("total_price", 0)
     )
 
     db.session.add(session)
     db.session.commit()
 
     return jsonify({"message": "Session booked"}), 201
-
 
 @sessions_bp.route("/sessions", methods=["GET"])
 def get_sessions():

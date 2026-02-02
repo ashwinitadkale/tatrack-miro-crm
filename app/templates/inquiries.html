@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold">Inquiry Inbox</h2>
+    <button onclick="document.getElementById('inquiryModal').classList.remove('hidden')" 
+            class="bg-black text-white px-6 py-2 rounded-lg hover:bg-gray-800 transition">
+        + New Inquiry
+    </button>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="bg-gray-200 p-4 rounded-xl min-h-[500px]">
+        <h3 class="font-bold text-gray-600 mb-4 uppercase text-sm tracking-widest">New</h3>
+        <div id="new-list" class="space-y-3"></div>
+    </div>
+    
+    <div class="bg-gray-200 p-4 rounded-xl">
+        <h3 class="font-bold text-gray-600 mb-4 uppercase text-sm tracking-widest">Contacted</h3>
+        <div id="contacted-list" class="space-y-3"></div>
+    </div>
+
+    <div class="bg-gray-200 p-4 rounded-xl">
+        <h3 class="font-bold text-gray-600 mb-4 uppercase text-sm tracking-widest">Booked</h3>
+        <div id="booked-list" class="space-y-3"></div>
+    </div>
+</div>
+
+<div id="inquiryModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center">
+    <div class="bg-white p-6 rounded-lg shadow-xl w-96">
+        <h3 class="text-xl font-bold mb-4">Add Client</h3>
+        <form id="newInquiryForm" class="space-y-3">
+            <input type="text" id="clientName" placeholder="Client Name" class="w-full border p-2 rounded" required>
+            <input type="text" id="contactInfo" placeholder="Instagram / Phone" class="w-full border p-2 rounded" required>
+            <input type="number" id="estPrice" placeholder="Estimated Price ($)" class="w-full border p-2 rounded">
+            <div class="flex justify-end gap-2 mt-4">
+                <button type="button" onclick="document.getElementById('inquiryModal').classList.add('hidden')" class="text-gray-500">Cancel</button>
+                <button type="submit" class="bg-black text-white px-4 py-2 rounded">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+async function loadInquiries() {
+    const response = await fetch('/inquiries');
+    if (!response.ok) return; 
+    const inquiries = await response.json();
+    
+    ['new', 'contacted', 'booked'].forEach(id => document.getElementById(id + '-list').innerHTML = '');
+
+    inquiries.forEach(inq => {
+        let status = inq.status || 'new';
+        const container = document.getElementById(status + '-list') || document.getElementById('new-list');
+
+        const card = `
+            <div class="bg-white p-4 rounded shadow-sm border-l-4 border-black mb-3">
+                <div class="flex justify-between">
+                    <p class="font-bold text-lg">${inq.client_name}</p>
+                    <span class="text-xs font-mono bg-gray-100 px-1 rounded h-fit">$${inq.estimated_price || 0}</span>
+                </div>
+                <div class="mt-3 flex gap-2">
+                    ${status === 'new' ? `<button onclick="updateStatus(${inq.id}, 'contacted')" class="text-xs bg-blue-100 px-2 py-1 rounded">Mark Contacted</button>` : ''}
+                    ${status !== 'booked' ? `<button onclick="bookSession(${inq.id})" class="text-xs bg-green-100 px-2 py-1 rounded font-bold">+ Book Session</button>` : ''}
+                </div>
+            </div>`;
+        container.innerHTML += card;
+    });
+}
+
+document.getElementById('newInquiryForm').onsubmit = async (e) => {
+    e.preventDefault();
+    await fetch('/inquiries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            client_name: document.getElementById('clientName').value,
+            contact_info: document.getElementById('contactInfo').value,
+            estimated_price: document.getElementById('estPrice').value
+        })
+    });
+    document.getElementById('inquiryModal').classList.add('hidden');
+    loadInquiries();
+};
+
+async function updateStatus(id, status) {
+    await fetch(`/inquiries/${id}`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({status: status})
+    });
+    loadInquiries();
+}
+
+async function bookSession(id) {
+    const date = prompt("Date (YYYY-MM-DD):", new Date().toISOString().split('T')[0]);
+    if(!date) return;
+    const time = prompt("Time:", "12:00");
+    const deposit = prompt("Deposit Amount ($):", "50");
+
+    await fetch('/sessions', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            inquiry_id: id,
+            session_date: date,
+            session_time: time,
+            deposit_amount: deposit
+        })
+    });
+    loadInquiries();
+}
+
+document.addEventListener('DOMContentLoaded', loadInquiries);
+</script>
+{% endblock %}
