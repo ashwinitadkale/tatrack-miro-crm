@@ -10,7 +10,7 @@ class Inquiry(db.Model):
     client_name = db.Column(db.String(100), nullable=False)
     contact_info = db.Column(db.String(100), nullable=False)
     tattoo_idea = db.Column(db.Text)
-    estimated_price = db.Column(db.Float)
+    estimated_price = db.Column(db.Integer)
     status = db.Column(db.String(20), default="new")
     notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
